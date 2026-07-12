@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>MATH RUSH</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:linear-gradient(145deg,#166a85,#0d2945);font-family:system-ui,sans-serif;color:#fff}.game{width:min(92vw,500px);text-align:center}h1{font-size:clamp(2.2rem,9vw,3.4rem);letter-spacing:.08em;margin:0;color:#fff25e;text-shadow:0 4px #b36318}.sub{margin:4px 0 16px;color:#d9f6ff}.panel{background:#ffffff14;border:2px solid #ffffff2b;border-radius:22px;padding:16px;box-shadow:0 14px 40px #00172588}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}.stat{border-radius:13px;background:#071d3670;padding:8px}.stat b{display:block;font-size:1.45rem;color:#fff25e}.stat span{font-size:.78rem;color:#d7efff}.time-low b{color:#ff7888}.question{font-size:clamp(2.8rem,13vw,4.4rem);font-weight:900;letter-spacing:.04em;min-height:104px;display:grid;place-items:center;border-radius:18px;background:#fff;color:#12304d;box-shadow:inset 0 -6px #c6dfeb;margin:12px 0}.answer{display:flex;gap:9px}.answer input{min-width:0;flex:1;border:0;border-radius:13px;padding:13px;text-align:center;font-size:1.45rem;font-weight:800;color:#153d5e;outline:3px solid transparent}.answer input:focus{outline-color:#fff25e}.answer button,button{border:0;border-radius:13px;padding:12px 18px;background:#fff25e;color:#3a290c;font:800 1rem system-ui;cursor:pointer;box-shadow:0 4px #af7d15}button:active{transform:translateY(3px);box-shadow:0 1px #af7d15}.message{min-height:25px;margin:11px 0 0;font-weight:800}.good{color:#aafc8a}.bad{color:#ffb3bb}.screen{position:absolute;inset:0;display:grid;place-items:center;padding:26px;border-radius:20px;background:#0a2449ed}.stage{position:relative}.card{max-width:340px}.card h2{margin:0 0 10px;font-size:2rem}.card p{line-height:1.55;color:#d8efff;margin:0 0 20px}.hidden{display:none!important}.footer{font-size:.88rem;color:#cfebf7}
+  </style>
+</head>
+<body><main class="game">
+  <h1>MATH RUSH</h1><p class="sub">คิดไว ตอบให้ถูก!</p>
+  <div class="stage"><section class="panel">
+    <div class="stats"><div class="stat"><span>คะแนน</span><b id="score">0</b></div><div class="stat"><span>ตอบถูกติดกัน</span><b id="streak">0</b></div><div id="timeBox" class="stat"><span>เวลา</span><b id="time">90</b></div></div>
+    <div id="question" class="question">8 + 7</div>
+    <form id="form" class="answer"><input id="input" inputmode="numeric" autocomplete="off" aria-label="คำตอบ" placeholder="คำตอบ"><button>ตอบ</button></form>
+    <div id="message" class="message">กดเริ่มเกมเพื่อเริ่มทำโจทย์</div>
+  </section>
+  <section id="lobby" class="screen"><div class="card"><h2>พร้อมคิดเลขไหม?</h2><p>ตอบโจทย์ บวก ลบ คูณ และหาร ให้ได้มากที่สุดภายใน <b>90 วินาที</b><br><br>ตอบถูกต่อเนื่องจะได้โบนัสคะแนน!</p><button id="start">เริ่มเกม</button></div></section>
+  <section id="result" class="screen hidden"><div class="card"><h2>หมดเวลา!</h2><p>คะแนนของคุณ: <b id="final">0</b><br>สถิติสูงสุด: <b id="bestResult">0</b></p><button id="again">เล่นอีกครั้ง</button> <button id="home">กลับหน้าล็อบบี้</button></div></section>
+  </div><p class="footer">MATH RUSH • ฝึกคณิตศาสตร์อย่างสนุก</p>
+</main>
+<script>
+  const qEl=document.querySelector('#question'),input=document.querySelector('#input'),form=document.querySelector('#form'),scoreEl=document.querySelector('#score'),streakEl=document.querySelector('#streak'),timeEl=document.querySelector('#time'),timeBox=document.querySelector('#timeBox'),msg=document.querySelector('#message'),lobby=document.querySelector('#lobby'),result=document.querySelector('#result');
+  let answer=0,score=0,streak=0,seconds=90,active=false,timer,best=+localStorage.mathRushBest||0;document.querySelector('#bestResult').textContent=best;
+  const rand=(min,max)=>Math.floor(Math.random()*(max-min+1))+min;
+  function question(){let level=Math.min(4,1+Math.floor(score/10)),op=['+','-','×','÷'][rand(0,3)],a,b;if(op==='+'){a=rand(3,10+level*10);b=rand(2,10+level*10);answer=a+b}else if(op==='-'){a=rand(8,16+level*12);b=rand(1,a-1);answer=a-b}else if(op==='×'){a=rand(2,3+level*3);b=rand(2,4+level*3);answer=a*b}else{b=rand(2,3+level*3);answer=rand(2,4+level*3);a=b*answer}qEl.textContent=a+' '+op+' '+b;input.value='';input.focus()}
+  function update(){scoreEl.textContent=score;streakEl.textContent=streak;timeEl.textContent=seconds;timeBox.classList.toggle('time-low',seconds<=10)}
+  function start(){clearInterval(timer);score=0;streak=0;seconds=90;active=true;update();msg.textContent='เริ่มเลย!';msg.className='message';lobby.classList.add('hidden');question();timer=setInterval(()=>{seconds--;update();if(seconds<=0)finish()},1000)}
+  function finish(){clearInterval(timer);active=false;best=Math.max(best,score);localStorage.mathRushBest=best;document.querySelector('#final').textContent=score;document.querySelector('#bestResult').textContent=best;result.classList.remove('hidden');input.blur()}
+  form.addEventListener('submit',e=>{e.preventDefault();if(!active||input.value.trim()==='')return;if(Number(input.value)===answer){streak++;let gain=1+Math.floor(streak/5);score+=gain;msg.textContent='ถูกต้อง! +'+gain+' คะแนน';msg.className='message good';question()}else{streak=0;msg.textContent='ยังไม่ถูก ลองโจทย์ใหม่!';msg.className='message bad';question()}update()});
+  document.querySelector('#start').onclick=start;document.querySelector('#again').onclick=()=>{result.classList.add('hidden');start()};document.querySelector('#home').onclick=()=>{result.classList.add('hidden');lobby.classList.remove('hidden');msg.textContent='กดเริ่มเกมเพื่อเริ่มทำโจทย์'};
+</script></body></html>
